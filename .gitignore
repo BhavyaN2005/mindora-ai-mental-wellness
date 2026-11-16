@@ -1,0 +1,40 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+ENV/
+.env
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Output artifacts that can be regenerated
+outputs/*.png
+*.db
+*.sqlite3
+data/*.db
+data/*.sqlite3
+# Python virtual environment
+.venv/
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+
+# Environment variables and secrets
+.env
+.env.*
+
+!.env.example

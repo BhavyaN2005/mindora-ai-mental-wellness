@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mindora | Your space to feel heard</title>
+    
+    <!-- Immediate theme application to prevent theme flash -->
+    <script>
+        (function() {
+            try {
+                var savedTheme = localStorage.getItem('mindora_theme') || 'system';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                if (savedTheme === 'system') {
+                    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    document.documentElement.setAttribute('data-resolved-theme', prefersDark ? 'dark' : 'light');
+                } else {
+                    document.documentElement.setAttribute('data-resolved-theme', savedTheme);
+                }
+            } catch (e) {}
+        })();
+    </script>
+
+    <!-- Google Fonts: Inter / Plus Jakarta Sans & Lora -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Sidebar: Conversation History -->
+        <aside class="sidebar" id="sidebar" aria-label="Conversation History">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <div class="logo-leaf">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12a10 10 0 0 1 10-10z"/>
+                            <path d="M12 6c-2.5 2-4 5-4 8 3 0 6-1.5 8-4"/>
+                        </svg>
+                    </div>
+                    <span class="sidebar-title">Mindora</span>
+                </div>
+                <button class="btn-icon" id="closeSidebarBtn" aria-label="Close sidebar" title="Close sidebar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="sidebar-action-wrap">
+                <button class="btn-new-chat" id="newChatBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>New Reflection</span>
+                </button>
+            </div>
+
+            <div class="sidebar-search-wrap">
+                <div class="search-box">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="searchConversationsInput" placeholder="Search conversations..." aria-label="Search conversations">
+                </div>
+            </div>
+
+            <!-- Conversation Groups List -->
+            <div class="conversations-scroll" id="conversationsList" role="navigation">
+                <div class="history-empty" id="historyEmpty">
+                    <p>No previous conversations yet. Start a new reflection to begin.</p>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <button class="btn-sidebar-clear" id="clearAllHistoryBtn" title="Clear all conversation history">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    <span>Clear all history</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Sidebar Overlay for Mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Workspace -->
+        <div class="main-workspace">
+            <!-- App Header -->
+            <header class="app-header">
+                <div class="header-left">
+                    <button class="btn-icon" id="toggleSidebarBtn" aria-label="Toggle history menu" title="Toggle history menu">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div class="brand-wrap">
+                        <span class="brand-title">Mindora</span>
+                        <span class="brand-tagline">Your space to feel heard.</span>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <div class="status-indicator" title="Mindora is online and listening">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Online</span>
+                    </div>
+
+                    <!-- Theme Toggle Switcher -->
+                    <div class="theme-toggle-group" role="radiogroup" aria-label="Theme Selection">
+                        <button class="theme-btn" id="themeLightBtn" data-theme="light" title="Light Theme" aria-label="Light Theme">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                            </svg>
+                        </button>
+                        <button class="theme-btn" id="themeDarkBtn" data-theme="dark" title="Dark Theme" aria-label="Dark Theme">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                        </button>
+                        <button class="theme-btn active" id="themeSystemBtn" data-theme="system" title="System Theme" aria-label="System Theme">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Emergency Help Action -->
+                    <button class="btn-emergency" id="openEmergencyBtn" aria-label="Emergency Help & Crisis Resources">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        <span>Emergency Help</span>
+                    </button>
+
+                    <!-- User Account / Profile Menu -->
+                    <div class="user-menu-wrap">
+                        <button class="user-avatar-btn" id="userMenuBtn" aria-haspopup="true" aria-expanded="false" title="Account Menu">
+                            <span class="user-initial" id="userAvatarInitial">G</span>
+                        </button>
+                        <div class="user-dropdown hidden" id="userDropdown" role="menu">
+                            <div class="dropdown-header">
+                                <span class="dropdown-username" id="dropdownUsername">Guest User</span>
+                                <span class="dropdown-email" id="dropdownEmail">Session-based data</span>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <button class="dropdown-item" id="openProfileModalBtn" role="menuitem">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                <span>Profile & Settings</span>
+                            </button>
+                            <button class="dropdown-item" id="openAboutModalBtn" role="menuitem">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                </svg>
+                                <span>About Mindora</span>
+                            </button>
+                            <div class="dropdown-divider"></div>
+                            <button class="dropdown-item" id="authActionBtn" role="menuitem">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                                    <polyline points="10 17 15 12 10 7"></polyline>
+                                    <line x1="15" y1="12" x2="3" y2="12"></line>
+                                </svg>
+                                <span id="authActionText">Sign In / Register</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Chat Container -->
+            <main class="chat-main" id="chatMain">
+                <div class="chat-viewport" id="chatViewport">
+                    <!-- Welcome Screen (Visible when chat has no messages) -->
+                    <div class="welcome-screen" id="welcomeScreen">
+                        <div class="welcome-icon-wrap">
+                            <div class="welcome-icon-inner">
+                                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12a10 10 0 0 1 10-10z"/>
+                                    <path d="M12 6c-2.5 2-4 5-4 8 3 0 6-1.5 8-4"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <h1 class="welcome-title">Your space to feel heard.</h1>
+                        <p class="welcome-subtitle">Hi, I'm Mindora. This is a space where you can talk freely. What's been on your mind lately?</p>
+
+                        <div class="prompt-pills-container">
+                            <button class="prompt-pill" data-prompt="I've been feeling overwhelmed.">
+                                <span>"I've been feeling overwhelmed."</span>
+                            </button>
+                            <button class="prompt-pill" data-prompt="I just need someone to listen.">
+                                <span>"I just need someone to listen."</span>
+                            </button>
+                            <button class="prompt-pill" data-prompt="I'm having a difficult day.">
+                                <span>"I'm having a difficult day."</span>
+                            </button>
+                            <button class="prompt-pill" data-prompt="I don't know how I feel.">
+                                <span>"I don't know how I feel."</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Conversation Message Stream -->
+                    <div class="message-stream" id="messageStream" role="log" aria-live="polite"></div>
+
+                    <!-- Typing Indicator -->
+                    <div class="typing-row hidden" id="typingIndicator">
+                        <div class="assistant-avatar">M</div>
+                        <div class="typing-bubble">
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Input Section -->
+                <footer class="chat-footer">
+                    <form class="chat-form" id="chatForm">
+                        <div class="input-card">
+                            <textarea 
+                                id="messageInput" 
+                                placeholder="Type what is on your mind... (Enter to send, Shift + Enter for new line)" 
+                                rows="1" 
+                                maxlength="600" 
+                                required></textarea>
+                            
+                            <div class="input-actions">
+                                <button type="button" class="btn-clear-chat" id="clearConversationBtn" title="Clear current conversation" aria-label="Clear current conversation">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                </button>
+                                <button type="submit" class="btn-send" id="sendBtn" aria-label="Send message" title="Send message">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="footer-disclaimer">
+                        <span>Mindora is an AI companion and does not replace professional mental healthcare.</span>
+                    </div>
+                </footer>
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL 1: Emergency Help & Crisis Resources -->
+    <div class="modal-backdrop hidden" id="emergencyModal" role="dialog" aria-modal="true" aria-labelledby="emergencyModalTitle">
+        <div class="modal-box modal-crisis">
+            <div class="modal-top">
+                <div class="modal-icon-crisis">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="modal-heading" id="emergencyModalTitle">24/7 Crisis Support & Help</h2>
+                    <p class="modal-desc">If you or someone you care about is experiencing immediate crisis or thoughts of self-harm, confidential human support is available right now.</p>
+                </div>
+                <button class="btn-close-modal" id="closeEmergencyModalBtn" aria-label="Close modal">&times;</button>
+            </div>
+            
+            <div class="modal-content">
+                <div class="crisis-grid">
+                    <div class="crisis-card">
+                        <div class="crisis-country">United States & Canada</div>
+                        <div class="crisis-phone">988</div>
+                        <div class="crisis-label">Suicide & Crisis Lifeline (Call or Text 24/7) • 988lifeline.org</div>
+                    </div>
+                    <div class="crisis-card">
+                        <div class="crisis-country">United Kingdom</div>
+                        <div class="crisis-phone">111 / 999</div>
+                        <div class="crisis-label">NHS Mental Health Services (111) • Samaritans (116 123)</div>
+                    </div>
+                    <div class="crisis-card">
+                        <div class="crisis-country">India</div>
+                        <div class="crisis-phone">112 / 14416</div>
+                        <div class="crisis-label">National Emergency (112) • Tele-MANAS (14416) • iCall (9152987821)</div>
+                    </div>
+                    <div class="crisis-card">
+                        <div class="crisis-country">Australia</div>
+                        <div class="crisis-phone">13 11 14</div>
+                        <div class="crisis-label">Lifeline Australia (Call 24/7) • lifeline.org.au</div>
+                    </div>
+                    <div class="crisis-card">
+                        <div class="crisis-country">Worldwide / International</div>
+                        <div class="crisis-phone">findahelpline.com</div>
+                        <div class="crisis-label">Free, confidential support directory across 130+ countries • befrienders.org</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-bottom">
+                <button class="btn-modal-primary" id="closeEmergencyModalBottomBtn">I Understand</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Authentication (Sign In & Register) -->
+    <div class="modal-backdrop hidden" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
+        <div class="modal-box modal-auth">
+            <div class="modal-top">
+                <h2 class="modal-heading" id="authModalTitle">Sign In to Mindora</h2>
+                <button class="btn-close-modal" id="closeAuthModalBtn" aria-label="Close modal">&times;</button>
+            </div>
+
+            <div class="auth-tabs" role="tablist">
+                <button class="auth-tab active" id="tabLoginBtn" role="tab" aria-selected="true">Sign In</button>
+                <button class="auth-tab" id="tabRegisterBtn" role="tab" aria-selected="false">Create Account</button>
+            </div>
+
+            <div class="modal-content">
+                <div class="auth-error-banner hidden" id="authErrorBanner"></div>
+
+                <!-- Login Form -->
+                <form class="auth-form" id="loginForm">
+                    <div class="form-group">
+                        <label for="loginIdentifier">Username or Email</label>
+                        <input type="text" id="loginIdentifier" required placeholder="Enter your username or email">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" required placeholder="Enter your password">
+                    </div>
+                    <button type="submit" class="btn-auth-submit" id="submitLoginBtn">Sign In</button>
+                </form>
+
+                <!-- Register Form (Hidden by default) -->
+                <form class="auth-form hidden" id="registerForm">
+                    <div class="form-group">
+                        <label for="regUsername">Username</label>
+                        <input type="text" id="regUsername" required placeholder="Choose a username">
+                    </div>
+                    <div class="form-group">
+                        <label for="regEmail">Email Address</label>
+                        <input type="email" id="regEmail" required placeholder="name@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="regPassword">Password (at least 6 characters)</label>
+                        <input type="password" id="regPassword" required minlength="6" placeholder="Create a password">
+                    </div>
+                    <button type="submit" class="btn-auth-submit" id="submitRegisterBtn">Create Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Profile & Settings -->
+    <div class="modal-backdrop hidden" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
+        <div class="modal-box">
+            <div class="modal-top">
+                <h2 class="modal-heading" id="profileModalTitle">Profile & Preferences</h2>
+                <button class="btn-close-modal" id="closeProfileModalBtn" aria-label="Close modal">&times;</button>
+            </div>
+            
+            <div class="modal-content">
+                <div class="settings-section">
+                    <h3 class="settings-title">Account Information</h3>
+                    <div class="profile-details-card">
+                        <div class="profile-row">
+                            <span class="profile-label">Status</span>
+                            <span class="profile-val" id="profileStatusVal">Guest User</span>
+                        </div>
+                        <div class="profile-row" id="profileEmailRow">
+                            <span class="profile-label">Email</span>
+                            <span class="profile-val" id="profileEmailVal">N/A</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3 class="settings-title">Theme Preference</h3>
+                    <div class="theme-select-options">
+                        <label class="theme-radio-card">
+                            <input type="radio" name="themeRadio" value="light">
+                            <div class="theme-radio-content">
+                                <span class="theme-name">Light Theme</span>
+                                <span class="theme-sub">Soft Sage & Ivory</span>
+                            </div>
+                        </label>
+                        <label class="theme-radio-card">
+                            <input type="radio" name="themeRadio" value="dark">
+                            <div class="theme-radio-content">
+                                <span class="theme-name">Dark Theme</span>
+                                <span class="theme-sub">Muted Forest Night</span>
+                            </div>
+                        </label>
+                        <label class="theme-radio-card">
+                            <input type="radio" name="themeRadio" value="system">
+                            <div class="theme-radio-content">
+                                <span class="theme-name">System / Auto</span>
+                                <span class="theme-sub">Matches device preference</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-section danger-zone" id="dangerZoneSection">
+                    <h3 class="settings-title danger">Data & Account Controls</h3>
+                    <div class="danger-actions-list">
+                        <button class="btn-danger-outline" id="clearAllChatsModalBtn">Clear All Conversation History</button>
+                        <button class="btn-danger-fill hidden" id="deleteAccountBtn">Delete Account & Data</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-bottom">
+                <button class="btn-modal-primary" id="closeProfileModalBottomBtn">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: About Mindora -->
+    <div class="modal-backdrop hidden" id="aboutModal" role="dialog" aria-modal="true" aria-labelledby="aboutModalTitle">
+        <div class="modal-box">
+            <div class="modal-top">
+                <h2 class="modal-heading" id="aboutModalTitle">About Mindora</h2>
+                <button class="btn-close-modal" id="closeAboutModalBtn" aria-label="Close modal">&times;</button>
+            </div>
+
+            <div class="modal-content about-text">
+                <p><strong>Mindora</strong> is an AI mental wellness companion created to give individuals a calm, non-judgmental space to explore their emotions, process daily stress, and feel heard.</p>
+                
+                <h4>What Mindora Is</h4>
+                <ul>
+                    <li>A supportive, reflective conversational space for emotional exploration.</li>
+                    <li>A companion to help untangle feelings of stress, sadness, loneliness, and overwhelm.</li>
+                    <li>Equipped with an independent crisis safety layer to guide users to verified professional help.</li>
+                </ul>
+
+                <h4>What Mindora Is Not</h4>
+                <ul>
+                    <li>Mindora is <strong>not</strong> a medical doctor, psychiatrist, or licensed clinical therapist.</li>
+                    <li>Mindora cannot diagnose conditions or prescribe clinical treatments.</li>
+                    <li>Mindora cannot provide emergency intervention directly during critical physical danger.</li>
+                </ul>
+
+                <h4>Privacy & Data Handling</h4>
+                <p>Conversations are isolated to your account or guest session. We do not sell your personal reflections or conversation data. You can delete individual chats or your entire account at any time.</p>
+            </div>
+
+            <div class="modal-bottom">
+                <button class="btn-modal-primary" id="closeAboutModalBottomBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

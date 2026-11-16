@@ -1,0 +1,9 @@
+# Mindora - Production Dependencies
+# STRICT CONSTRAINT: Only standard libraries, NumPy, Pandas, Matplotlib, and Flask.
+# NO TensorFlow, PyTorch, Keras, Scikit-learn, NLTK, spaCy, or external AI APIs.
+
+Flask>=3.0.0
+Werkzeug>=3.0.0
+numpy>=1.24.0
+pandas>=2.0.0
+matplotlib>=3.7.0
